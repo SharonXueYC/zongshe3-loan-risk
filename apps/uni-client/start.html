@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>闪借</title>
+  <script src="js/api-config.js"></script>
+  <script src="js/user-session.js"></script>
+  <script>
+    (async function () {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('logout') === '1') {
+        UserSession.clearUserSession();
+        window.location.replace('login-prototype.html');
+        return;
+      }
+
+      const token = UserSession.getAuthToken();
+      if (!token) {
+        window.location.replace('login-prototype.html');
+        return;
+      }
+
+      const valid = await UserSession.validateSession();
+      if (valid) {
+        window.location.replace('main-home.html');
+      } else {
+        UserSession.clearUserSession();
+        window.location.replace('login-prototype.html');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p style="text-align:center;padding:2rem;font-family:sans-serif;color:#666;">正在进入闪借…</p>
+</body>
+</html>

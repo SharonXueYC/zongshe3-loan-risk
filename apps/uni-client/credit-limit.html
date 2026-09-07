@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>额度查询 - 闪借</title>
+  <style>
+    :root {
+      --primary: #7b5cf2;
+      --primary-dark: #5a3fca;
+      --primary-light: #9b7bff;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1f2b;
+      --muted: #6b6b7a;
+      --shadow: 0 12px 32px rgba(93, 67, 210, 0.18);
+      --success: #16a34a;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Helvetica", "PingFang SC", sans-serif;
+      background: linear-gradient(180deg, #f3eefe 0%, #faf7ff 100%);
+      color: var(--text);
+      display: flex; justify-content: center; padding: 20px;
+    }
+    .phone {
+      width: 100%; max-width: 390px; min-height: 760px;
+      background: var(--bg); border-radius: 32px;
+      box-shadow: 0 24px 60px rgba(93, 67, 210, 0.25);
+      border: 1px solid rgba(123, 92, 242, 0.15);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    .header {
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex; align-items: center; padding: 0 16px; color: #fff;
+      font-size: 17px; font-weight: 700;
+    }
+    .back-btn { width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; margin-right: 8px; }
+    .header-title { flex: 1; text-align: center; margin-right: 40px; }
+    .content { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .limit-card {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: var(--radius); padding: 22px 18px; color: #fff;
+      box-shadow: 0 16px 40px rgba(123, 92, 242, 0.35);
+    }
+    .limit-label { font-size: 13px; opacity: 0.9; }
+    .limit-value { font-size: 34px; font-weight: 800; margin: 6px 0; }
+    .limit-meta { font-size: 12px; opacity: 0.9; line-height: 1.5; }
+    .score-card {
+      background: var(--card); border-radius: var(--radius); padding: 18px 16px;
+      box-shadow: var(--shadow); display: flex; gap: 16px; align-items: center;
+    }
+    .score-ring {
+      width: 96px; height: 96px; position: relative; flex-shrink: 0;
+    }
+    .score-ring svg {
+      width: 100%; height: 100%; transform: rotate(-90deg);
+    }
+    .score-ring .bg {
+      fill: none; stroke: rgba(123,92,242,0.15); stroke-width: 8;
+    }
+    .score-ring .fg {
+      fill: none; stroke: url(#scoreGradient); stroke-width: 8;
+      stroke-linecap: round; stroke-dasharray: 251; stroke-dashoffset: 251;
+      transition: stroke-dashoffset 1s ease;
+    }
+    .score-ring .score-text {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-weight: 800;
+      font-size: 24px; color: var(--primary-dark);
+    }
+    .score-ring .score-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .score-ring .score-max { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .score-info { flex: 1; min-width: 0; }
+    .score-info .title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .score-info .meta { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+    .score-info .qualified {
+      display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px;
+      background: rgba(22,163,74,0.12); color: var(--success); font-weight: 700;
+    }
+    .score-info .qualified.no { background: rgba(220,38,38,0.1); color: #dc2626; }
+    .card {
+      background: var(--card); border-radius: var(--radius); padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .factor-list { list-style: none; }
+    .factor-list li {
+      display: flex; justify-content: space-between; gap: 8px;
+      padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 12px;
+    }
+    .factor-list li:last-child { border-bottom: none; }
+    .pos { color: var(--success); font-weight: 700; }
+    .neg { color: #dc2626; font-weight: 700; }
+    .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .doc-item {
+      border: 1.5px solid rgba(123,92,242,0.25); border-radius: 12px; padding: 12px;
+      cursor: pointer; transition: all 120ms ease; position: relative;
+    }
+    .doc-item.selected { border-color: var(--primary); background: rgba(123,92,242,0.08); }
+    .doc-item.submitted { opacity: 0.65; cursor: default; }
+    .doc-item.submitted::after {
+      content: '已提交'; position: absolute; top: 8px; right: 8px;
+      font-size: 10px; color: var(--success); font-weight: 700;
+    }
+    .doc-name { font-size: 13px; font-weight: 700; }
+    .doc-bonus { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .doc-file { width: 100%; margin-top: 8px; font-size: 11px; }
+    .btn {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: linear-gradient(120deg, var(--primary), var(--primary-light));
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 12px;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.secondary { background: #fff; color: var(--primary-dark); border: 1.5px solid rgba(123,92,242,0.35); }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .toast {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      padding: 10px 16px; background: #1f1f2b; color: #fff; border-radius: 12px;
+      font-size: 13px; opacity: 0; pointer-events: none; transition: 200ms ease; z-index: 100;
+    }
+    .toast.show { opacity: 1; }
+    .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <section class="phone">
+    <header class="header">
+      <div class="back-btn" id="backBtn">‹</div>
+      <span class="header-title">额度查询</span>
+    </header>
+    <main class="content">
+      <div class="limit-card">
+        <div class="limit-label">当前可借额度（元）</div>
+        <div class="limit-value" id="limitValue">--</div>
+        <div class="limit-meta" id="limitMeta">完成实名后可提升额度</div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring">
+          <svg viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#7b5cf2"/>
+                <stop offset="100%" stop-color="#9b7bff"/>
+              </linearGradient>
+            </defs>
+            <circle class="bg" cx="50" cy="50" r="40"/>
+            <circle class="fg" id="scoreFg" cx="50" cy="50" r="40"/>
+          </svg>
+          <div class="score-text">
+            <span id="scoreNum">--</span>
+            <span class="score-label">信誉分</span>
+            <span class="score-max" id="scoreMax">/ 850</span>
+          </div>
+        </div>
+        <div class="score-info">
+          <p class="title">信誉分总分</p>
+          <p class="meta" id="creditMeta">加载中…</p>
+          <span class="qualified" id="qualifiedBadge">--</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">信誉分构成明细</div>
+        <ul class="factor-list" id="factorList"><li class="empty">加载中…</li></ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">提交增信资料（提额）</div>
+        <p class="hint">选择资料类型并上传附件，提交后系统将重新计算额度，与首页、借款页额度同步更新。</p>
+        <div class="doc-grid" id="docGrid"></div>
+        <button class="btn" id="submitDocsBtn" disabled>提交所选资料</button>
+        <button class="btn secondary" id="refreshBtn">刷新额度</button>
+      </div>
+    </main>
+  </section>
+
+  <script src="js/api-config.js"></script>
+  <script src="js/user-session.js"></script>
+  <script>
+    const API_BASE = (window.ZongsheApi && ZongsheApi.getApiBase()) || (localStorage.getItem('apiBase') || 'http://localhost:8080');
+    UserSession.syncSessionFromToken();
+    const DOC_TYPES = [
+      { key: 'education', name: '学历证明', bonus: '+10分' },
+      { key: 'income', name: '收入证明', bonus: '+15分' },
+      { key: 'property', name: '房产证明', bonus: '+20分' },
+      { key: 'social', name: '社保缴纳证明', bonus: '+8分' }
+    ];
+
+    let creditData = null;
+    let selectedDocs = new Set();
+    const submittedDocs = new Set();
+
+    const toast = document.getElementById('toast');
+    const showToast = (msg) => {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1600);
+    };
+
+    function getAuthToken() {
+      const raw = (localStorage.getItem('token') || sessionStorage.getItem('token') || '').trim();
+      if (!raw || raw === 'undefined' || raw === 'null') return '';
+      return raw.startsWith('Bearer ') ? raw.slice(7).trim() : raw;
+    }
+
+    async function request(path, options = {}) {
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+      const token = getAuthToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: options.method || 'GET', headers,
+        body: options.body ? JSON.stringify(options.body) : undefined
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `请求失败(${res.status})`);
+      return data;
+    }
+
+    function renderFactors(factors) {
+      const list = document.getElementById('factorList');
+      if (!factors || !factors.length) {
+        list.innerHTML = '<li class="empty">暂无加减分明细</li>';
+        return;
+      }
+      list.innerHTML = factors.map(f => {
+        const pts = Number(f.points) || 0;
+        const cls = pts >= 0 ? 'pos' : 'neg';
+        const sign = pts >= 0 ? '+' : '';
+        return `<li>
+          <div><strong>${f.name}</strong><div style="color:var(--muted);margin-top:2px">${f.description || ''}</div></div>
+          <span class="${cls}">${sign}${pts}</span>
+        </li>`;
+      }).join('');
+    }
+
+    function updateScoreRing(score, maxScore) {
+      const max = maxScore || 850;
+      const safe = Math.max(0, Math.min(Number(score) || 0, max));
+      const fg = document.getElementById('scoreFg');
+      const circumference = 251;
+      const offset = circumference - (safe / max) * circumference;
+      fg.style.strokeDashoffset = String(offset);
+      document.getElementById('scoreNum').textContent = safe;
+      document.getElementById('scoreMax').textContent = `/ ${max}`;
+    }
+
+    function renderCredit(data) {
+      creditData = data;
+      const maxScore = data.maxCreditScore || 850;
+      document.getElementById('limitValue').textContent = Number(data.loanLimit || 0).toLocaleString('zh-CN');
+      document.getElementById('limitMeta').textContent =
+        `等级 ${data.creditLevel || '-'} · ${data.qualified ? '当前可借款' : '暂不可借'} · 数据实时来自后端`;
+      updateScoreRing(data.creditScore, maxScore);
+      document.getElementById('creditMeta').textContent =
+        `综合信用分 ${data.creditScore} / ${maxScore} · 等级 ${data.creditLevel || '-'} · 策略 ${data.strategyName || '默认'}`;
+      const badge = document.getElementById('qualifiedBadge');
+      badge.textContent = data.qualified ? '可借款' : '暂不可借';
+      badge.classList.toggle('no', !data.qualified);
+      renderFactors(data.factors);
+      submittedDocs.clear();
+      (data.submittedDocuments || []).forEach(d => submittedDocs.add(d));
+      renderDocGrid();
+      localStorage.setItem(UserSession.userKey('lastLoanLimit'), String(data.loanLimit || 0));
+    }
+
+    function renderDocGrid() {
+      const grid = document.getElementById('docGrid');
+      grid.innerHTML = DOC_TYPES.map(doc => {
+        const done = submittedDocs.has(doc.key);
+        const selected = selectedDocs.has(doc.key);
+        return `<div class="doc-item ${done ? 'submitted' : ''} ${selected ? 'selected' : ''}" data-key="${doc.key}">
+          <div class="doc-name">${doc.name}</div>
+          <div class="doc-bonus">预计 ${doc.bonus}</div>
+          ${done ? '' : `<input type="file" class="doc-file" accept="image/*,.pdf" data-file="${doc.key}" />`}
+        </div>`;
+      }).join('');
+
+      grid.querySelectorAll('.doc-item:not(.submitted)').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.tagName === 'INPUT') return;
+          const key = el.dataset.key;
+          if (selectedDocs.has(key)) selectedDocs.delete(key);
+          else selectedDocs.add(key);
+          el.classList.toggle('selected');
+          updateSubmitBtn();
+        });
+      });
+      grid.querySelectorAll('.doc-file').forEach(input => {
+        input.addEventListener('change', () => {
+          const key = input.dataset.file;
+          if (input.files?.[0]) {
+            selectedDocs.add(key);
+            input.closest('.doc-item')?.classList.add('selected');
+          }
+          updateSubmitBtn();
+        });
+      });
+      updateSubmitBtn();
+    }
+
+    function updateSubmitBtn() {
+      const btn = document.getElementById('submitDocsBtn');
+      const pending = [...selectedDocs].filter(k => !submittedDocs.has(k));
+      btn.disabled = pending.length === 0;
+      btn.textContent = pending.length ? `提交所选资料（${pending.length} 项）` : '请选择未提交的资料';
+    }
+
+    async function loadCredit() {
+      const userId = localStorage.getItem('userId');
+      if (!userId || !getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => { window.location.href = 'login-prototype.html'; }, 800);
+        return;
+      }
+      try {
+        const data = await request(`/api/credit/users/${userId}/evaluation`);
+        if (!data.success) throw new Error(data.message || '加载失败');
+        renderCredit(data);
+      } catch (e) {
+        showToast(e.message || '额度加载失败');
+      }
+    }
+
+    document.getElementById('submitDocsBtn').addEventListener('click', async () => {
+      const userId = localStorage.getItem('userId');
+      const pending = [...selectedDocs].filter(k => !submittedDocs.has(k));
+      if (!pending.length) return;
+      const btn = document.getElementById('submitDocsBtn');
+      btn.disabled = true;
+      btn.textContent = '提交中…';
+      try {
+        const data = await request(`/api/credit/users/${userId}/documents`, {
+          method: 'POST',
+          body: { documentTypes: pending }
+        });
+        if (!data.success) throw new Error(data.message || '提交失败');
+        const oldLimit = creditData?.loanLimit || 0;
+        renderCredit(data);
+        const delta = (data.loanLimit || 0) - oldLimit;
+        showToast(delta > 0 ? `资料已提交，额度提升 ${delta.toLocaleString()} 元` : (data.message || '资料已提交'));
+        selectedDocs.clear();
+      } catch (e) {
+        showToast(e.message || '提交失败');
+      } finally {
+        updateSubmitBtn();
+      }
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', loadCredit);
+    document.getElementById('backBtn').addEventListener('click', () => { window.location.href = 'main-home.html'; });
+
+    loadCredit();
+  </script>
+</body>
+</html>

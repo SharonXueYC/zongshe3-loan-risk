@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>还款 - 闪借</title>
+  <style>
+    :root {
+      --primary: #7b5cf2;
+      --primary-dark: #5a3fca;
+      --primary-light: #9b7bff;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1f2b;
+      --muted: #6b6b7a;
+      --shadow: 0 18px 40px rgba(93, 67, 210, 0.18);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Helvetica", "PingFang SC", sans-serif;
+      background: linear-gradient(180deg, #f3eefe 0%, #faf7ff 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .phone {
+      width: 100%;
+      max-width: 390px;
+      min-height: 760px;
+      background: var(--bg);
+      border-radius: 32px;
+      box-shadow: 0 24px 60px rgba(93, 67, 210, 0.25);
+      border: 1px solid rgba(123, 92, 242, 0.15);
+      overflow: hidden;
+    }
+    .header {
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(123, 92, 242, 0.25);
+    }
+    .back-btn {
+      width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; cursor: pointer;
+      margin-right: 8px;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.15); }
+    .header-title { flex: 1; text-align: center; margin-right: 40px; }
+    .content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .tip { color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .plan-item, .record-item {
+      border: 1px solid rgba(123,92,242,0.2);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      background: #fcfbff;
+    }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .main { font-size: 14px; font-weight: 700; }
+    .sub { margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .amount { color: var(--primary-dark); font-weight: 800; }
+    .btn {
+      margin-top: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      background: linear-gradient(120deg, var(--primary), #9b7bff);
+      cursor: pointer;
+    }
+    .btn.secondary {
+      background: linear-gradient(120deg, #b9a6ff, #c9bbff);
+      color: #fff;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .repay-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .repay-input {
+      flex: 1;
+      border: 1px solid rgba(123,92,242,0.28);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .repay-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(123,92,242,0.12);
+    }
+    .empty { padding: 16px 0; color: var(--muted); font-size: 12px; text-align: center; }
+    .record-meta { font-size: 12px; color: var(--muted); margin: -4px 0 10px; }
+    .filter-wrap {
+      background: linear-gradient(135deg, rgba(123,92,242,0.08), rgba(155,123,255,0.06));
+      border: 1px solid rgba(123,92,242,0.2);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .filter-heading { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; }
+    @media (max-width: 360px) {
+      .filter-grid { grid-template-columns: 1fr; }
+    }
+    .filter-field { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .filter-input {
+      border: 1px solid rgba(123,92,242,0.28);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      background: #fff;
+      color: var(--text);
+      width: 100%;
+    }
+    .filter-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(123,92,242,0.12);
+    }
+    .filter-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .btn-compact { margin-top: 0; padding: 9px 14px; font-size: 12px; width: auto; flex: 1; min-width: 0; }
+    .toast {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      background: #1f1f2b; color: #fff; font-size: 12px; border-radius: 10px;
+      padding: 9px 14px; opacity: 0; pointer-events: none; transition: 200ms;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast">提示</div>
+  <section class="phone">
+    <header class="header">
+      <div class="back-btn" id="backBtn">‹</div>
+      <span class="header-title">还款</span>
+    </header>
+    <main class="content">
+      <div class="card">
+        <p class="title">待还计划</p>
+        <div id="planList"><div class="empty">加载中...</div></div>
+      </div>
+      <div class="card">
+        <p class="title">还款记录</p>
+        <p class="record-meta" id="recordSummary"></p>
+        <div class="filter-wrap">
+          <p class="filter-heading">筛选条件</p>
+          <div class="filter-grid">
+            <div class="filter-field">
+              <span class="filter-label">借款申请日期（起）</span>
+              <input type="date" class="filter-input" id="fLoanFrom" />
+            </div>
+            <div class="filter-field">
+              <span class="filter-label">借款申请日期（止）</span>
+              <input type="date" class="filter-input" id="fLoanTo" />
+            </div>
+            <div class="filter-field">
+              <span class="filter-label">还款日期（起）</span>
+              <input type="date" class="filter-input" id="fRepayFrom" />
+            </div>
+            <div class="filter-field">
+              <span class="filter-label">还款日期（止）</span>
+              <input type="date" class="filter-input" id="fRepayTo" />
+            </div>
+            <div class="filter-field">
+              <span class="filter-label">金额下限（元）</span>
+              <input type="number" class="filter-input" id="fAmtMin" step="0.01" min="0" placeholder="不填表示不限" />
+            </div>
+            <div class="filter-field">
+              <span class="filter-label">金额上限（元）</span>
+              <input type="number" class="filter-input" id="fAmtMax" step="0.01" min="0" placeholder="不填表示不限" />
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button type="button" class="btn secondary btn-compact" id="fApply">应用筛选</button>
+            <button type="button" class="btn secondary btn-compact" id="fReset">重置</button>
+          </div>
+        </div>
+        <div id="recordList"><div class="empty">加载中...</div></div>
+      </div>
+      <div class="card">
+        <p class="title">说明</p>
+        <p class="tip">支持全额还款与部分还款。部分还款金额必须大于0且不超过剩余应还金额，失败会显示具体原因。</p>
+      </div>
+    </main>
+  </section>
+
+  <script src="js/api-config.js"></script>
+  <script>
+    const API_BASE = (window.ZongsheApi && ZongsheApi.getApiBase()) || (localStorage.getItem('apiBase') || 'http://localhost:8080');
+    const toast = document.getElementById('toast');
+    const planList = document.getElementById('planList');
+    const recordList = document.getElementById('recordList');
+    const recordSummary = document.getElementById('recordSummary');
+    let plansExpanded = false;
+    let currentPlans = [];
+    let recordsExpanded = false;
+    let currentRecords = [];
+    let rawRecords = [];
+
+    function getAuthToken() {
+      const urlToken = new URLSearchParams(window.location.search).get('token');
+      const candidates = [
+        localStorage.getItem('token'),
+        sessionStorage.getItem('token'),
+        urlToken
+      ];
+      const raw = (candidates.find(v => typeof v === 'string' && v.trim()) || '').trim();
+      if (!raw || raw === 'undefined' || raw === 'null') return '';
+      return raw.startsWith('Bearer ') ? raw.slice(7).trim() : raw;
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    function normalizeErrorMessage(rawMessage) {
+      const msg = String(rawMessage || '');
+      if (msg.includes('401') || msg.includes('未登录') || msg.includes('认证')) return '登录已失效，请重新登录';
+      if (msg.includes('无权') || msg.includes('403')) return '无权限操作该还款计划';
+      if (msg.includes('超过剩余应还金额')) return '还款金额超过剩余应还金额';
+      if (msg.includes('必须大于0') || msg.includes('金额不能为空')) return '请输入有效还款金额';
+      if (msg.includes('不存在')) return '还款计划不存在，请刷新页面';
+      if (msg.includes('已结清') || msg.includes('状态异常')) return '该计划当前不可还款';
+      return msg || '还款失败，请稍后重试';
+    }
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = 'main-home.html';
+    });
+
+    async function request(path, options = {}) {
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+      const token = getAuthToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: options.method || 'GET',
+        headers,
+        cache: 'no-store',
+        body: options.body ? JSON.stringify(options.body) : undefined
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('登录已失效，请重新登录');
+        }
+        throw new Error(data.message || `请求失败(${res.status})`);
+      }
+      return data;
+    }
+
+    function renderPlans(plans) {
+      currentPlans = Array.isArray(plans) ? plans : [];
+      if (!plans || plans.length === 0) {
+        planList.innerHTML = '<div class="empty">暂无待还计划</div>';
+        return;
+      }
+      const visiblePlans = plansExpanded ? currentPlans : currentPlans.slice(0, 2);
+      const toggleBtn = currentPlans.length > 2
+        ? `<button class="btn secondary" data-action="toggle-plans">${plansExpanded ? '收起计划' : `展开更多（还有 ${currentPlans.length - 2} 条）`}</button>`
+        : '';
+      planList.innerHTML = visiblePlans.map((p, idx) => {
+        const pid = p.id != null ? p.id : p.planId;
+        const remain = Number(p.remainingAmount || 0);
+        const safeAmount = Number.isFinite(remain) && remain > 0 ? remain : 0;
+        return `
+          <div class="plan-item">
+            <div class="row">
+              <span class="main">计划 ${p.planNo || ('#' + (idx + 1))}</span>
+              <span class="amount">¥ ${safeAmount.toFixed(2)}</span>
+            </div>
+            <p class="sub">期数：第${p.periodNo || '-'}期｜到期：${p.dueDate || '-'}｜状态：${p.status || '-'}</p>
+            <button class="btn" data-action="full" data-plan-id="${pid}" data-amount="${safeAmount.toFixed(2)}">全额还款</button>
+            <div class="repay-row">
+              <input class="repay-input" data-input-plan-id="${pid}" type="number" step="0.01" min="0.01" max="${safeAmount.toFixed(2)}" placeholder="输入部分还款金额（≤ ${safeAmount.toFixed(2)}）" />
+              <button class="btn secondary" data-action="partial" data-plan-id="${pid}" data-amount="${safeAmount.toFixed(2)}">部分还款</button>
+            </div>
+          </div>
+        `;
+      }).join('') + toggleBtn;
+    }
+
+    function isoDateKey(v) {
+      if (v == null || v === '') return null;
+      if (typeof v === 'string') {
+        const m = v.match(/^(\d{4}-\d{2}-\d{2})/);
+        return m ? m[1] : null;
+      }
+      if (Array.isArray(v) && v.length >= 3) {
+        const y = v[0];
+        const mo = v[1];
+        const d = v[2];
+        return `${String(y).padStart(4, '0')}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+      return null;
+    }
+
+    function formatRecordWhen(v) {
+      if (v == null || v === '') return '-';
+      if (typeof v === 'string') {
+        return v.replace('T', ' ').replace(/\.\d{3}Z?$/, '').slice(0, 19);
+      }
+      if (Array.isArray(v) && v.length >= 6) {
+        const [y, mo, d, h, mi, s] = v;
+        return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+      const k = isoDateKey(v);
+      return k || '-';
+    }
+
+    function filterRecords(list) {
+      const loanFrom = document.getElementById('fLoanFrom').value;
+      const loanTo = document.getElementById('fLoanTo').value;
+      const repayFrom = document.getElementById('fRepayFrom').value;
+      const repayTo = document.getElementById('fRepayTo').value;
+      const minAmt = document.getElementById('fAmtMin').value.trim();
+      const maxAmt = document.getElementById('fAmtMax').value.trim();
+      return list.filter(r => {
+        const lk = isoDateKey(r.loanApplyTime);
+        // 缺少借款申请日期时：不按日期筛掉该条，避免“还款成功但列表被筛空”
+        if (loanFrom && lk && lk < loanFrom) return false;
+        if (loanTo && lk && lk > loanTo) return false;
+        const rk = isoDateKey(r.repayTime);
+        if (repayFrom && rk && rk < repayFrom) return false;
+        if (repayTo && rk && rk > repayTo) return false;
+        const amt = Number(r.amount);
+        if (minAmt !== '') {
+          const lo = Number(minAmt);
+          if (!Number.isFinite(amt) || !Number.isFinite(lo) || amt < lo) return false;
+        }
+        if (maxAmt !== '') {
+          const hi = Number(maxAmt);
+          if (!Number.isFinite(amt) || !Number.isFinite(hi) || amt > hi) return false;
+        }
+        return true;
+      });
+    }
+
+    function refreshRecordSection() {
+      const filtered = filterRecords(rawRecords);
+      if (!rawRecords.length) {
+        recordSummary.textContent = '';
+      } else if (filtered.length === rawRecords.length) {
+        recordSummary.textContent = `共 ${rawRecords.length} 条`;
+      } else {
+        recordSummary.textContent = `共 ${rawRecords.length} 条，筛选后 ${filtered.length} 条`;
+      }
+      renderRecords(filtered);
+    }
+
+    function renderRecords(records) {
+      currentRecords = Array.isArray(records) ? records : [];
+      if (!currentRecords.length) {
+        const hasRaw = rawRecords.length > 0;
+        recordList.innerHTML = `<div class="empty">${hasRaw ? '无符合筛选条件的记录' : '暂无还款记录'}</div>`;
+        return;
+      }
+      const visibleRecords = recordsExpanded ? currentRecords : currentRecords.slice(0, 3);
+      const toggleBtn = currentRecords.length > 3
+        ? `<button class="btn secondary" data-action="toggle-records">${recordsExpanded ? '收起记录' : `展开更多（还有 ${currentRecords.length - 3} 条）`}</button>`
+        : '';
+      recordList.innerHTML = visibleRecords.map(r => `
+        <div class="record-item">
+          <div class="row">
+            <span class="main">${r.repayNo || '-'}</span>
+            <span class="amount">¥ ${(Number(r.amount || 0)).toFixed(2)}</span>
+          </div>
+          <p class="sub">申请单：${r.applicationNo || '-'}｜借款申请日期：${formatRecordWhen(r.loanApplyTime)}</p>
+          <p class="sub">计划：${r.planNo || '-'}｜第 ${r.periodNo ?? '-'} 期｜还款时间：${formatRecordWhen(r.repayTime)}</p>
+        </div>
+      `).join('') + toggleBtn;
+    }
+
+    function clearRecordFiltersIfPaidReturn() {
+      try {
+        const q = new URLSearchParams(window.location.search);
+        if (q.get('paid') !== '1') return;
+        ['fLoanFrom', 'fLoanTo', 'fRepayFrom', 'fRepayTo', 'fAmtMin', 'fAmtMax'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        const url = new URL(window.location.href);
+        url.searchParams.delete('paid');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : '') + url.hash);
+      } catch (_) { /* ignore */ }
+    }
+
+    async function loadData() {
+      clearRecordFiltersIfPaidReturn();
+      const token = getAuthToken();
+      if (!token) {
+        showToast('未读取到登录令牌，请重新登录');
+        planList.innerHTML = '<div class="empty">未读取到 token，无法获取还款计划</div>';
+        recordSummary.textContent = '';
+        rawRecords = [];
+        recordList.innerHTML = '<div class="empty">未读取到 token，无法获取还款记录</div>';
+        setTimeout(() => {
+          window.location.href = 'login-prototype.html';
+        }, 800);
+        return;
+      }
+      try {
+        const [plans, records] = await Promise.all([
+          request('/api/repayment/plans/user'),
+          request('/api/repayment/records/user')
+        ]);
+        renderPlans(plans);
+        rawRecords = Array.isArray(records) ? records : [];
+        recordsExpanded = false;
+        refreshRecordSection();
+      } catch (e) {
+        const message = normalizeErrorMessage(e.message || '加载失败');
+        showToast(message);
+        planList.innerHTML = '<div class="empty">还款计划加载失败</div>';
+        recordSummary.textContent = '';
+        rawRecords = [];
+        recordList.innerHTML = '<div class="empty">还款记录加载失败</div>';
+        if (message.includes('登录')) {
+          setTimeout(() => {
+            window.location.href = 'login-prototype.html';
+          }, 800);
+        }
+      }
+    }
+
+    planList.addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('button[data-action="toggle-plans"]');
+      if (toggleBtn) {
+        plansExpanded = !plansExpanded;
+        renderPlans(currentPlans);
+        return;
+      }
+      const btn = e.target.closest('button[data-plan-id]');
+      if (!btn) return;
+      const idStr = (btn.getAttribute('data-plan-id') || '').trim();
+      const amtStr = (btn.getAttribute('data-amount') || '').trim().replace(/,/g, '');
+      const planId = Number(idStr);
+      const maxAmount = Number(amtStr);
+      let amount = maxAmount;
+      const action = btn.dataset.action || 'full';
+
+      if (!Number.isFinite(planId) || planId <= 0 || !Number.isFinite(maxAmount) || maxAmount <= 0) {
+        showToast('当前计划金额异常');
+        return;
+      }
+
+      if (action === 'partial') {
+        const input = planList.querySelector(`input[data-input-plan-id="${planId}"]`);
+        amount = Number(input && input.value);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          showToast('请输入有效的部分还款金额');
+          return;
+        }
+        if (amount > maxAmount) {
+          showToast('部分还款金额不能超过剩余应还金额');
+          return;
+        }
+      }
+      try {
+        sessionStorage.setItem('__repayCheckout', JSON.stringify({
+          planId,
+          amount: Number(Number(amount).toFixed(2)),
+          mode: action,
+          ts: Date.now()
+        }));
+      } catch (_) { /* ignore */ }
+      const payToken = getAuthToken();
+      const tokenSuffix = payToken ? `&token=${encodeURIComponent(payToken)}` : '';
+      window.location.href = `payment.html?planId=${encodeURIComponent(String(planId))}&amount=${encodeURIComponent(Number(amount).toFixed(2))}&mode=${encodeURIComponent(action)}${tokenSuffix}`;
+    });
+
+    recordList.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action="toggle-records"]');
+      if (!btn) return;
+      recordsExpanded = !recordsExpanded;
+      renderRecords(currentRecords);
+    });
+
+    document.getElementById('fApply').addEventListener('click', () => {
+      recordsExpanded = false;
+      refreshRecordSection();
+    });
+    document.getElementById('fReset').addEventListener('click', () => {
+      ['fLoanFrom', 'fLoanTo', 'fRepayFrom', 'fRepayTo', 'fAmtMin', 'fAmtMax'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      recordsExpanded = false;
+      refreshRecordSection();
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

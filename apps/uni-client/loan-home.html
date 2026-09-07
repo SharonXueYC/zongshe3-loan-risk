@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>借款 - 闪借</title>
+  <style>
+    :root {
+      --primary: #7b5cf2;
+      --primary-dark: #5a3fca;
+      --primary-light: #9b7bff;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1f2b;
+      --muted: #6b6b7a;
+      --shadow: 0 18px 40px rgba(93, 67, 210, 0.18);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow-x: hidden; }
+    body {
+      font-family: "Inter", "Helvetica", "PingFang SC", sans-serif;
+      background: linear-gradient(180deg, #f3eefe 0%, #faf7ff 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 390px;
+      min-height: 760px;
+      background: var(--bg);
+      border-radius: 32px;
+      box-shadow: 0 24px 60px rgba(93, 67, 210, 0.25);
+      border: 1px solid rgba(123, 92, 242, 0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部标题栏 - 高度 50px，与首页相同颜色 */
+    .header {
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(123, 92, 242, 0.25);
+      position: relative;
+    }
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 8px;
+      border-radius: 8px;
+      transition: background 120ms ease;
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    .header-title {
+      flex: 1;
+      text-align: center;
+      margin-right: 40px; /* 平衡返回按钮的宽度 */
+    }
+
+    /* 内容区域 */
+    .content {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: #fff;
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 20px 18px;
+      box-shadow: var(--shadow);
+    }
+    .headline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .limit {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+    .tag {
+      background: rgba(123,92,242,0.1);
+      color: var(--primary-dark);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1.4px solid rgba(123, 92, 242, 0.35);
+      background: #fcfbff;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f1f2b;
+      transition: 150ms ease;
+    }
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(123, 92, 242, 0.12);
+    }
+    .quick-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .chip {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.4px solid rgba(123,92,242,0.3);
+      background: rgba(123,92,242,0.08);
+      color: var(--primary-dark);
+      font-weight: 700;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+    .chip:hover { background: rgba(123,92,242,0.16); }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .row select, .row input[type="number"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1.4px solid rgba(123,92,242,0.35);
+      background: #fcfbff;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(120deg, var(--primary), #9b7bff);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      box-shadow: 0 16px 32px rgba(123, 92, 242, 0.35);
+      transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+      margin-top: 10px;
+    }
+    .btn:hover { filter: brightness(1.03); }
+    .btn:active { transform: translateY(1px); box-shadow: 0 10px 24px rgba(123, 92, 242, 0.32); }
+    .calc {
+      background: rgba(123,92,242,0.06);
+      border: 1px solid rgba(123,92,242,0.15);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+    .calc strong { color: var(--primary-dark); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      padding: 10px 16px;
+      background: #1f1f2b;
+      color: #fff;
+      border-radius: 12px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 200ms ease;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast">提示信息</div>
+
+  <section class="phone">
+    <!-- 顶部标题栏 -->
+    <header class="header">
+      <div class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </div>
+      <span class="header-title">借款</span>
+    </header>
+
+    <!-- 内容区域 -->
+    <main class="content">
+      <div class="card">
+        <div class="headline">
+          <div>
+            <div class="tag">可用额度</div>
+            <div class="limit" id="limitText">¥ 50,000</div>
+          </div>
+          <div class="tag">随借随还</div>
+        </div>
+
+        <div class="field">
+          <label for="amount">借款金额（元）</label>
+          <input id="amount" class="input" type="number" placeholder="请输入金额" />
+          <div class="quick-row" id="quickRow"></div>
+        </div>
+
+        <div class="field">
+          <label>期限与利率</label>
+          <div class="row">
+            <select id="term">
+              <option value="6">6 期</option>
+              <option value="12" selected>12 期</option>
+              <option value="24">24 期</option>
+            </select>
+            <input id="rate" type="number" step="0.01" value="12" />%
+          </div>
+          <small style="color:var(--muted);">年化利率，示例值 12%</small>
+        </div>
+
+        <div class="field">
+          <label>还款方式</label>
+          <div class="row">
+            <select id="mode">
+              <option value="equal" selected>等额本息</option>
+              <option value="principal">等额本金</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="calc" id="calcBox">
+          月供（预计）：-- 元<br/>
+          总利息（预计）：-- 元<br/>
+          总还款（预计）：-- 元
+        </div>
+
+        <button class="btn" id="applyBtn">确认借款</button>
+      </div>
+    </main>
+  </section>
+
+  <script src="js/api-config.js"></script>
+  <script>
+    const toast = document.getElementById('toast');
+    const showToast = (msg) => {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1400);
+    };
+    const API_BASE = (window.ZongsheApi && ZongsheApi.getApiBase()) || (localStorage.getItem('apiBase') || 'http://localhost:8080');
+
+    function getAuthToken() {
+      const urlToken = new URLSearchParams(window.location.search).get('token');
+      const candidates = [
+        localStorage.getItem('token'),
+        sessionStorage.getItem('token'),
+        urlToken
+      ];
+      const raw = (candidates.find(v => typeof v === 'string' && v.trim()) || '').trim();
+      if (!raw || raw === 'undefined' || raw === 'null') return '';
+      return raw.startsWith('Bearer ') ? raw.slice(7).trim() : raw;
+    }
+
+    async function request(path, options = {}) {
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+      const token = getAuthToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: options.method || 'GET',
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `请求失败(${res.status})`);
+      return data;
+    }
+
+    // 返回按钮
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = 'main-home.html';
+    });
+
+    const amountInput = document.getElementById('amount');
+    const termSelect = document.getElementById('term');
+    const rateInput = document.getElementById('rate');
+    const modeSelect = document.getElementById('mode');
+    const calcBox = document.getElementById('calcBox');
+    const quickRow = document.getElementById('quickRow');
+    const limitText = document.getElementById('limitText');
+
+    // 解析可用额度，生成 1/10、1/2、全部 的快捷输入（只显示数字）
+    function parseLimit() {
+      const raw = limitText.textContent.replace(/[^\d.]/g, '');
+      const num = parseFloat(raw.replace(/,/g, ''));
+      return isNaN(num) ? 0 : num;
+    }
+
+    function formatAmount(n) {
+      return Math.round(n).toLocaleString('zh-CN', { maximumFractionDigits: 0 });
+    }
+
+    function renderQuickButtons() {
+      const limit = parseLimit();
+      quickRow.innerHTML = '';
+      if (!limit || limit <= 0) return;
+      const presets = [
+        limit * 0.1,  // 十分之一
+        limit * 0.5,  // 一半
+        limit         // 全部可借
+      ];
+      presets.forEach(val => {
+        const v = Math.round(val);
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.dataset.val = String(v);
+        chip.textContent = formatAmount(v);
+        quickRow.appendChild(chip);
+      });
+    }
+
+    quickRow.addEventListener('click', (e) => {
+      const val = e.target?.dataset?.val;
+      if (val) {
+        amountInput.value = val;
+        updateCalc();
+      }
+    });
+
+    [amountInput, termSelect, rateInput, modeSelect].forEach(el => {
+      el.addEventListener('input', updateCalc);
+      el.addEventListener('change', updateCalc);
+    });
+
+    function updateCalc() {
+      const amt = parseFloat(amountInput.value);
+      const term = parseInt(termSelect.value, 10);
+      const rate = parseFloat(rateInput.value) / 100;
+      if (isNaN(amt) || amt <= 0 || isNaN(term) || isNaN(rate)) {
+        calcBox.innerHTML = `月供（预计）：-- 元<br/>总利息（预计）：-- 元<br/>总还款（预计）：-- 元`;
+        return;
+      }
+      const monthlyRate = rate / 12;
+      let monthly = 0, totalInterest = 0;
+      if (modeSelect.value === 'equal') {
+        monthly = amt * monthlyRate * Math.pow(1 + monthlyRate, term) / (Math.pow(1 + monthlyRate, term) - 1);
+        totalInterest = monthly * term - amt;
+      } else {
+        const principalPart = amt / term;
+        totalInterest = 0;
+        for (let i = 0; i < term; i++) {
+          totalInterest += (amt - principalPart * i) * monthlyRate;
+        }
+        monthly = principalPart + (amt * monthlyRate);
+      }
+      const totalPay = amt + totalInterest;
+      calcBox.innerHTML = `
+        月供（预计）：<strong>${monthly.toFixed(2)}</strong> 元<br/>
+        总利息（预计）：<strong>${totalInterest.toFixed(2)}</strong> 元<br/>
+        总还款（预计）：<strong>${totalPay.toFixed(2)}</strong> 元
+      `;
+    }
+
+    document.getElementById('applyBtn').addEventListener('click', async () => {
+      const amount = Number(amountInput.value);
+      if (!amount || amount < 1000) {
+        showToast('请输入借款金额');
+        return;
+      }
+      if (!getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => { window.location.href = 'login-prototype.html'; }, 700);
+        return;
+      }
+      updateCalc();
+      const applyBtn = document.getElementById('applyBtn');
+      applyBtn.disabled = true;
+      const originalText = applyBtn.textContent;
+      applyBtn.textContent = '提交中...';
+      try {
+        const data = await request('/api/loan-applications/submit', {
+          method: 'POST',
+          body: {
+            loanType: '个人消费贷款',
+            loanAmount: amount,
+            loanTerm: Number(termSelect.value),
+            repaymentMode: modeSelect.value,
+            interestRate: Number(rateInput.value),
+            description: 'H5借款页提交'
+          }
+        });
+        if (!data.success) throw new Error(data.message || '借款提交失败');
+        showToast('借款提交成功');
+        setTimeout(() => {
+          window.location.href = 'loan-records.html?submitted=1';
+        }, 700);
+      } catch (e) {
+        showToast(e.message || '借款提交失败');
+      } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = originalText;
+      }
+    });
+
+    renderQuickButtons();
+    updateCalc();
+
+    async function ensureIdentityAndLoad() {
+      const userId = localStorage.getItem('userId');
+      if (!userId || !getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => { window.location.href = 'login-prototype.html'; }, 700);
+        return;
+      }
+      try {
+        const user = await request(`/api/users/${userId}`);
+        if (!user.idCardNumber || String(user.idCardNumber).length < 15) {
+          showToast('请先提交身份证信息');
+          setTimeout(() => { window.location.href = 'profile/profile-complete.html?from=loan'; }, 700);
+          return;
+        }
+      } catch (_) {
+        showToast('无法校验身份信息');
+        setTimeout(() => { window.location.href = 'main-home.html'; }, 900);
+        return;
+      }
+      await loadLoanLimit();
+    }
+
+    async function loadLoanLimit() {
+      const userId = localStorage.getItem('userId');
+      if (!userId || !getAuthToken()) return;
+      try {
+        const data = await request(`/api/credit/users/${userId}/evaluation`);
+        if (data.success) {
+          limitText.textContent = '¥ ' + Number(data.loanLimit || 0).toLocaleString('zh-CN');
+          renderQuickButtons();
+        }
+      } catch (e) {
+        try {
+          const fallback = await request(`/api/users/${userId}/loan-limit`);
+          if (fallback.success) {
+            limitText.textContent = '¥ ' + Number(fallback.loanLimit || 0).toLocaleString('zh-CN');
+            renderQuickButtons();
+          }
+        } catch (_) { /* 保持默认展示 */ }
+      }
+    }
+
+    ensureIdentityAndLoad();
+  </script>
+</body>
+</html>

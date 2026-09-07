@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>借款申请已提交 - 闪借</title>
+  <style>
+    :root {
+      --primary: #7b5cf2;
+      --primary-dark: #5a3fca;
+      --primary-light: #9b7bff;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1f2b;
+      --muted: #6b6b7a;
+      --shadow: 0 18px 40px rgba(93, 67, 210, 0.18);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow-x: hidden; }
+    body {
+      font-family: "Inter", "Helvetica", "PingFang SC", sans-serif;
+      background: linear-gradient(180deg, #f3eefe 0%, #faf7ff 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    .phone {
+      width: 100%;
+      max-width: 390px;
+      min-height: 760px;
+      background: var(--bg);
+      border-radius: 32px;
+      box-shadow: 0 24px 60px rgba(93, 67, 210, 0.25);
+      border: 1px solid rgba(123, 92, 242, 0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部标题栏 - 与首页相同颜色 */
+    .header {
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(123, 92, 242, 0.25);
+    }
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 8px;
+      border-radius: 8px;
+      transition: background 120ms ease;
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    .header-title {
+      flex: 1;
+      text-align: center;
+      margin-right: 40px;
+    }
+
+    /* 内容区域 */
+    .content {
+      flex: 1;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* 成功图标 */
+    .success-icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin-top: 40px;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 50px rgba(123, 92, 242, 0.35);
+      position: relative;
+      animation: scaleIn 0.5s ease;
+    }
+    .success-icon::after {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      border: 2px solid rgba(123, 92, 242, 0.2);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .success-icon svg {
+      width: 56px;
+      height: 56px;
+      color: #fff;
+    }
+
+    /* 大字提醒 */
+    .main-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 12px;
+      animation: fadeInUp 0.5s ease 0.2s both;
+    }
+
+    .sub-title {
+      font-size: 16px;
+      color: var(--primary-dark);
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.5s ease 0.3s both;
+    }
+
+    /* 提示卡片 */
+    .info-card {
+      width: 100%;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      animation: fadeInUp 0.5s ease 0.4s both;
+    }
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .info-item:last-child {
+      border-bottom: none;
+    }
+    .info-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(123, 92, 242, 0.1);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .info-text {
+      flex: 1;
+    }
+    .info-text strong {
+      display: block;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .info-text span {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* 按钮区域 */
+    .btn-group {
+      width: 100%;
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeInUp 0.5s ease 0.5s both;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+    }
+    .btn-primary {
+      background: linear-gradient(120deg, var(--primary), var(--primary-light));
+      color: #fff;
+      box-shadow: 0 16px 32px rgba(123, 92, 242, 0.35);
+    }
+    .btn-primary:hover { filter: brightness(1.03); }
+    .btn-primary:active { transform: translateY(1px); }
+    .btn-secondary {
+      background: rgba(123, 92, 242, 0.1);
+      color: var(--primary-dark);
+      border: 1.5px solid rgba(123, 92, 242, 0.25);
+    }
+    .btn-secondary:hover { background: rgba(123, 92, 242, 0.15); }
+
+    /* 底部提示 */
+    .footer-note {
+      margin-top: auto;
+      padding: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fadeInUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(1.1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <section class="phone">
+    <!-- 顶部标题栏 -->
+    <header class="header">
+      <div class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </div>
+      <span class="header-title">借款</span>
+    </header>
+
+    <!-- 内容区域 -->
+    <main class="content">
+      <!-- 成功图标 -->
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+
+      <!-- 大字提醒 -->
+      <h1 class="main-title">借款申请已提交</h1>
+      <p class="sub-title">请于 3 个工作日内查看审核结果</p>
+
+      <!-- 提示信息卡片 -->
+      <div class="info-card">
+        <div class="info-item">
+          <div class="info-icon">📋</div>
+          <div class="info-text">
+            <strong>审核进度</strong>
+            <span>您可以在"进度查询"中随时查看审核状态</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">📱</div>
+          <div class="info-text">
+            <strong>短信通知</strong>
+            <span>审核结果将通过短信通知您，请保持手机畅通</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">💰</div>
+          <div class="info-text">
+            <strong>放款到账</strong>
+            <span>审核通过后，资金将在 24 小时内到达您的银行卡</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 按钮区域 -->
+      <div class="btn-group">
+        <button class="btn btn-primary" id="viewProgress">查看审核进度</button>
+        <button class="btn btn-secondary" id="backHome">返回首页</button>
+      </div>
+
+      <!-- 底部提示 -->
+      <div class="footer-note">
+        🔒 您的信息已加密传输，请放心使用
+      </div>
+    </main>
+  </section>
+
+  <script>
+    // 返回按钮
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = 'main-home.html';
+    });
+
+    // 查看审核进度
+    document.getElementById('viewProgress').addEventListener('click', () => {
+      window.location.href = 'admin-review-wait.html';
+    });
+
+    // 返回首页
+    document.getElementById('backHome').addEventListener('click', () => {
+      window.location.href = 'main-home.html';
+    });
+  </script>
+</body>
+</html>
+

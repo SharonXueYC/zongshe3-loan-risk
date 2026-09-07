@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>借款记录 - 闪借</title>
+  <style>
+    :root {
+      --primary: #7b5cf2;
+      --primary-light: #9b7bff;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1f2b;
+      --muted: #6b6b7a;
+      --shadow: 0 12px 32px rgba(93, 67, 210, 0.18);
+      --success: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Helvetica", "PingFang SC", sans-serif;
+      background: linear-gradient(180deg, #f3eefe 0%, #faf7ff 100%);
+      color: var(--text); display: flex; justify-content: center; padding: 20px;
+    }
+    .phone {
+      width: 100%; max-width: 390px; min-height: 760px;
+      background: var(--bg); border-radius: 32px;
+      box-shadow: 0 24px 60px rgba(93, 67, 210, 0.25);
+      border: 1px solid rgba(123, 92, 242, 0.15);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    .header {
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex; align-items: center; padding: 0 16px; color: #fff;
+      font-size: 17px; font-weight: 700;
+    }
+    .back-btn { width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; margin-right: 8px; }
+    .header-title { flex: 1; text-align: center; margin-right: 40px; }
+    .content { flex: 1; padding: 16px; overflow-y: auto; }
+    .banner {
+      background: rgba(123,92,242,0.1); border-radius: 12px; padding: 12px;
+      font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5;
+    }
+    .record {
+      background: var(--card); border-radius: var(--radius); padding: 14px;
+      box-shadow: var(--shadow); margin-bottom: 12px;
+    }
+    .record-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .record-no { font-size: 13px; font-weight: 700; }
+    .status {
+      font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 999px; white-space: nowrap;
+    }
+    .status.pending { background: #fef3c7; color: var(--warn); }
+    .status.approved, .status.disbursed, .status.settled, .status.paid { background: #dcfce7; color: var(--success); }
+    .status.rejected { background: #fee2e2; color: var(--danger); }
+    .record-amount { font-size: 22px; font-weight: 800; color: var(--primary); margin: 8px 0 4px; }
+    .record-meta { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .progress { margin-top: 12px; }
+    .progress-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+    .progress-bar {
+      height: 6px; background: rgba(123,92,242,0.12); border-radius: 999px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      border-radius: 999px; transition: width 0.6s ease;
+    }
+    .steps { display: flex; justify-content: space-between; margin-top: 8px; }
+    .step-dot { font-size: 10px; color: var(--muted); text-align: center; flex: 1; }
+    .step-dot.done { color: var(--primary); font-weight: 700; }
+    .risk-tag { font-size: 11px; margin-top: 8px; color: var(--muted); }
+    .risk-tag.pass { color: var(--success); }
+    .risk-tag.fail { color: var(--danger); }
+    .empty { text-align: center; color: var(--muted); padding: 40px 16px; font-size: 14px; }
+    .toast {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      padding: 10px 16px; background: #1f1f2b; color: #fff; border-radius: 12px;
+      font-size: 13px; opacity: 0; pointer-events: none; transition: 200ms ease; z-index: 100;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <section class="phone">
+    <header class="header">
+      <div class="back-btn" id="backBtn">‹</div>
+      <span class="header-title">借款记录</span>
+    </header>
+    <main class="content">
+      <div class="banner" id="tipBanner">展示您的借款申请与当前进度，不含还款操作。</div>
+      <div id="recordList"><div class="empty">加载中…</div></div>
+    </main>
+  </section>
+
+  <script src="js/api-config.js"></script>
+  <script>
+    const API_BASE = (window.ZongsheApi && ZongsheApi.getApiBase()) || (localStorage.getItem('apiBase') || 'http://localhost:8080');
+    const params = new URLSearchParams(window.location.search);
+
+    const toast = document.getElementById('toast');
+    const showToast = (msg) => {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1600);
+    };
+
+    function getAuthToken() {
+      const raw = (localStorage.getItem('token') || sessionStorage.getItem('token') || '').trim();
+      if (!raw || raw === 'undefined' || raw === 'null') return '';
+      return raw.startsWith('Bearer ') ? raw.slice(7).trim() : raw;
+    }
+
+    async function request(path) {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = getAuthToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${path}`, { headers });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `请求失败(${res.status})`);
+      return data;
+    }
+
+    function normalizeStatus(status) {
+      return (status || 'pending').toLowerCase();
+    }
+
+    function statusText(item) {
+      if (item.statusText) return item.statusText;
+      const map = {
+        pending: '审核中',
+        approved: '已通过',
+        rejected: '已拒绝',
+        disbursed: '已放款',
+        settled: '已还清',
+        paid: '已还清'
+      };
+      return map[normalizeStatus(item.status)] || item.status || '未知';
+    }
+
+    function statusClass(status) {
+      const key = normalizeStatus(status);
+      if (key === 'disbursed' || key === 'settled' || key === 'paid') return 'approved';
+      return key;
+    }
+
+    function progressPercent(status) {
+      const key = normalizeStatus(status);
+      if (key === 'approved' || key === 'disbursed' || key === 'settled' || key === 'paid') return 100;
+      if (key === 'rejected') return 100;
+      return 55;
+    }
+
+    function progressSteps(status) {
+      const steps = ['已提交', '风控评估', '人工审核', '结果'];
+      const key = normalizeStatus(status);
+      let active = 1;
+      if (key === 'pending') active = 2;
+      if (key === 'approved' || key === 'disbursed' || key === 'rejected' || key === 'settled' || key === 'paid') active = 4;
+      return { steps, active };
+    }
+
+    function formatTime(t) {
+      if (!t) return '-';
+      return String(t).replace('T', ' ').slice(0, 16);
+    }
+
+    function renderRecords(list) {
+      const container = document.getElementById('recordList');
+      if (!list.length) {
+        container.innerHTML = '<div class="empty">暂无借款记录<br><span style="font-size:12px">去首页发起借款后在此查看进度</span></div>';
+        return;
+      }
+      container.innerHTML = list.map(item => {
+        const st = item.status || 'pending';
+        const pct = progressPercent(st);
+        const { steps, active } = progressSteps(st);
+        const riskLine = item.riskScore != null
+          ? `<div class="risk-tag ${item.riskPassed ? 'pass' : 'fail'}">风控：${item.riskPassed ? '通过' : '未通过'} · 风险分 ${item.riskScore}${item.rejectReason ? ' · ' + item.rejectReason : ''}</div>`
+          : '';
+        return `<article class="record">
+          <div class="record-head">
+            <div class="record-no">${item.applicationNo || '申请 #' + item.id}</div>
+            <span class="status ${statusClass(st)}">${statusText(item)}</span>
+          </div>
+          <div class="record-amount">¥ ${Number(item.loanAmount || 0).toLocaleString('zh-CN')}</div>
+          <div class="record-meta">
+            类型：${item.loanType || '-'} · 期限：${item.loanTerm || '-'} 个月<br>
+            申请时间：${formatTime(item.applyTime)}
+          </div>
+          ${riskLine}
+          <div class="progress">
+            <div class="progress-label">借款进度</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <div class="steps">
+              ${steps.map((s, i) => `<div class="step-dot ${i < active ? 'done' : ''}">${s}</div>`).join('')}
+            </div>
+          </div>
+        </article>`;
+      }).join('');
+    }
+
+    async function loadRecords() {
+      const userId = localStorage.getItem('userId');
+      if (!userId || !getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => { window.location.href = 'login-prototype.html'; }, 800);
+        return;
+      }
+      try {
+        const res = await request(`/api/loan-applications/user/${userId}`);
+        if (!res.success) throw new Error(res.message || '加载失败');
+        renderRecords(res.data || []);
+        if (params.get('submitted') === '1') {
+          showToast('借款已提交，可在下方查看进度');
+        }
+      } catch (e) {
+        document.getElementById('recordList').innerHTML = `<div class="empty">${e.message || '加载失败'}</div>`;
+      }
+    }
+
+    document.getElementById('backBtn').addEventListener('click', () => { window.location.href = 'main-home.html'; });
+    loadRecords();
+  </script>
+</body>
+</html>

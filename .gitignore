@@ -1,0 +1,25 @@
+# 依赖与编译
+**/node_modules/
+backend/target/
+**/.mvn/wrapper/maven-wrapper.jar
+
+# 密钥与本地配置
+.env
+.env.*
+!.env.example
+deploy/.env
+backend/.env
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 日志与打包产物
+backend/logs/
+*.log
+frontend/dist/
+apps/uni-client/unpackage/
+*.apk

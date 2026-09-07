@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>闪借 - 首页</title>
+  <style>
+    :root {
+      --primary: #7b5cf2;
+      --primary-dark: #5a3fca;
+      --primary-light: #9b7bff;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1f2b;
+      --muted: #6b6b7a;
+      --shadow: 0 12px 32px rgba(93, 67, 210, 0.18);
+      --radius: 16px;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+    body {
+      font-family: "Inter", "Helvetica", "PingFang SC", sans-serif;
+      background: linear-gradient(180deg, #f3eefe 0%, #faf7ff 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    /* 手机预览容器 */
+    .phone {
+      width: 100%;
+      max-width: 390px;
+      min-height: 760px;
+      background: var(--bg);
+      border-radius: 32px;
+      box-shadow: 0 24px 60px rgba(93, 67, 210, 0.25);
+      border: 1px solid rgba(123, 92, 242, 0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部标题栏 - 高度 50px */
+    .header {
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(123, 92, 242, 0.25);
+    }
+
+    /* 内容区域 - 垂直布局 */
+    .content {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    /* 借款主卡片 - 最显眼 */
+    .loan-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      color: #fff;
+      box-shadow: 0 16px 40px rgba(123, 92, 242, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .loan-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    .loan-card::after {
+      content: "";
+      position: absolute;
+      bottom: -40%;
+      left: -20%;
+      width: 160px;
+      height: 160px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .loan-label {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 6px;
+    }
+    .loan-amount {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .loan-unit {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .loan-hint {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-top: 8px;
+    }
+    .loan-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--primary-dark);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      position: relative;
+      z-index: 1;
+    }
+    .loan-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+    .loan-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 功能网格 */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px 14px;
+      box-shadow: var(--shadow);
+    }
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 120ms ease;
+    }
+    .menu-item:hover {
+      transform: translateY(-2px);
+    }
+    .menu-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+    .menu-icon.repay { background: linear-gradient(135deg, #10b981, #34d399); }
+    .menu-icon.progress { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .menu-icon.bank { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .menu-icon.profile { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .menu-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* 快捷操作卡片 */
+    .quick-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .quick-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quick-title::before {
+      content: "";
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(180deg, var(--primary), var(--primary-light));
+      border-radius: 2px;
+    }
+    .quick-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .quick-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(123,92,242,0.06);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .quick-item:hover {
+      background: rgba(123,92,242,0.12);
+    }
+    .quick-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quick-item-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 16px;
+    }
+    .quick-item-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .quick-item-arrow {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* 底部安全提示 */
+    .footer-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 8px 0 4px;
+    }
+
+    /* Toast 提示 */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      padding: 10px 16px;
+      background: #1f1f2b;
+      color: #fff;
+      border-radius: 12px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 200ms ease;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast">提示信息</div>
+
+  <section class="phone">
+    <!-- 顶部标题栏 50px -->
+    <header class="header">闪借</header>
+
+    <!-- 内容区域 - 垂直布局 -->
+    <main class="content">
+      <!-- 借款主卡片 - 最显眼 -->
+      <div class="loan-card">
+        <div class="loan-label">可借额度（元）</div>
+        <div class="loan-amount" id="loanLimit">5,000</div>
+        <div class="loan-hint">最快 5 分钟到账，随借随还</div>
+        <button class="loan-btn" id="loanBtn">立即借款</button>
+      </div>
+
+      <!-- 功能菜单网格 -->
+      <div class="menu-grid">
+        <div class="menu-item" id="menuRepay">
+          <div class="menu-icon repay">💰</div>
+          <span class="menu-label">还款</span>
+        </div>
+        <div class="menu-item" id="menuProgress">
+          <div class="menu-icon progress">📊</div>
+          <span class="menu-label">额度查询</span>
+        </div>
+        <div class="menu-item" id="menuBank">
+          <div class="menu-icon bank">💳</div>
+          <span class="menu-label">银行卡</span>
+        </div>
+        <div class="menu-item" id="menuProfile">
+          <div class="menu-icon profile">👤</div>
+          <span class="menu-label">个人资料</span>
+        </div>
+      </div>
+
+      <!-- 快捷操作 -->
+      <div class="quick-card">
+        <div class="quick-title">快捷操作</div>
+        <div class="quick-list">
+          <div class="quick-item" id="quickCalc">
+            <div class="quick-item-left">
+              <div class="quick-item-icon">🧮</div>
+              <span class="quick-item-text">借款计算器</span>
+            </div>
+            <span class="quick-item-arrow">›</span>
+          </div>
+          <div class="quick-item" id="quickHistory">
+            <div class="quick-item-left">
+              <div class="quick-item-icon">📜</div>
+              <span class="quick-item-text">借款记录</span>
+            </div>
+            <span class="quick-item-arrow">›</span>
+          </div>
+          <div class="quick-item" id="quickHelp">
+            <div class="quick-item-left">
+              <div class="quick-item-icon">❓</div>
+              <span class="quick-item-text">帮助中心</span>
+            </div>
+            <span class="quick-item-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部安全提示 -->
+      <div class="footer-note">
+        🔒 信息加密传输，保障资金安全
+        <div style="margin-top:8px;">
+          <a href="start.html?logout=1" id="logoutLink" style="color:#7b5cf2;text-decoration:none;font-size:12px;">退出登录</a>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <script src="js/api-config.js"></script>
+  <script src="js/user-session.js"></script>
+  <script>
+    const toast = document.getElementById('toast');
+    const showToast = (msg) => {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1400);
+    };
+
+    const API_BASE = (window.ZongsheApi && ZongsheApi.getApiBase()) || (localStorage.getItem('apiBase') || 'http://localhost:8080');
+
+    function getAuthToken() {
+      const urlToken = new URLSearchParams(window.location.search).get('token');
+      const candidates = [
+        localStorage.getItem('token'),
+        sessionStorage.getItem('token'),
+        urlToken
+      ];
+      const raw = (candidates.find(v => typeof v === 'string' && v.trim()) || '').trim();
+      if (!raw || raw === 'undefined' || raw === 'null') return '';
+      return raw.startsWith('Bearer ') ? raw.slice(7).trim() : raw;
+    }
+
+    async function request(path, options = {}) {
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+      const token = getAuthToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: options.method || 'GET',
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `请求失败(${res.status})`);
+      return data;
+    }
+
+    const INITIAL_LIMIT = UserSession.INITIAL_LOAN_LIMIT;
+
+    UserSession.syncSessionFromToken();
+    (async function initHome() {
+      const ok = await UserSession.ensureSessionOrRedirect('login-prototype.html');
+      if (!ok) return;
+      loadLoanLimit();
+    })();
+
+    function cacheLoanLimit(amount) {
+      const key = UserSession.userKey('lastLoanLimit');
+      if (UserSession.getUserId()) {
+        localStorage.setItem(key, String(amount));
+      }
+    }
+
+    function formatLimit(amount) {
+      const n = Number(amount);
+      if (!Number.isFinite(n) || n <= 0) return INITIAL_LIMIT.toLocaleString('zh-CN');
+      return n.toLocaleString('zh-CN');
+    }
+
+    async function loadLoanLimit() {
+      const userId = UserSession.getUserId();
+      const loanLimitEl = document.getElementById('loanLimit');
+      if (!userId || !getAuthToken()) {
+        loanLimitEl.textContent = '--';
+        return;
+      }
+      try {
+        const data = await request(`/api/credit/users/${userId}/evaluation`);
+        if (data.success) {
+          loanLimitEl.textContent = formatLimit(data.loanLimit);
+          cacheLoanLimit(data.loanLimit);
+        } else {
+          loanLimitEl.textContent = formatLimit(INITIAL_LIMIT);
+        }
+      } catch (e) {
+        try {
+          const fallback = await request(`/api/users/${userId}/loan-limit`);
+          if (fallback.success) {
+            loanLimitEl.textContent = formatLimit(fallback.loanLimit);
+            cacheLoanLimit(fallback.loanLimit);
+          } else {
+            loanLimitEl.textContent = formatLimit(INITIAL_LIMIT);
+          }
+        } catch (_) {
+          loanLimitEl.textContent = formatLimit(INITIAL_LIMIT);
+        }
+      }
+    }
+
+    window.addEventListener('pageshow', () => {
+      if (UserSession.getAuthToken()) loadLoanLimit();
+    });
+
+    async function hasIdentityCompleted() {
+      const userId = localStorage.getItem('userId');
+      if (!userId || !getAuthToken()) return false;
+      try {
+        const user = await request(`/api/users/${userId}`);
+        return !!(user.idCardNumber && String(user.idCardNumber).length >= 15);
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async function tryGoLoan() {
+      if (!getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => { window.location.href = 'login-prototype.html'; }, 800);
+        return;
+      }
+      if (!(await hasIdentityCompleted())) {
+        showToast('请先提交身份证信息');
+        setTimeout(() => {
+          window.location.href = 'profile/profile-complete.html?from=loan';
+        }, 500);
+        return;
+      }
+      window.location.href = 'loan-home.html';
+    }
+
+    // 立即借款
+    document.getElementById('loanBtn').addEventListener('click', tryGoLoan);
+
+    // 还款
+    document.getElementById('menuRepay').addEventListener('click', () => {
+      if (!getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => {
+          window.location.href = 'login-prototype.html';
+        }, 800);
+        return;
+      }
+      window.location.href = 'repay.html';
+    });
+
+    // 额度查询
+    document.getElementById('menuProgress').addEventListener('click', () => {
+      if (!getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => { window.location.href = 'login-prototype.html'; }, 800);
+        return;
+      }
+      window.location.href = 'credit-limit.html';
+    });
+
+    // 银行卡绑定
+    document.getElementById('menuBank').addEventListener('click', () => {
+      window.location.href = 'bank-bind.html';
+    });
+
+    // 个人资料
+    document.getElementById('menuProfile').addEventListener('click', () => {
+      window.location.href = 'profile/profile-complete.html';
+    });
+
+    // 借款计算器
+    document.getElementById('quickCalc').addEventListener('click', tryGoLoan);
+
+    // 借款记录
+    document.getElementById('quickHistory').addEventListener('click', () => {
+      if (!getAuthToken()) {
+        showToast('请先登录');
+        setTimeout(() => {
+          window.location.href = 'login-prototype.html';
+        }, 800);
+        return;
+      }
+      window.location.href = 'loan-records.html';
+    });
+
+    // 帮助中心
+    document.getElementById('quickHelp').addEventListener('click', () => {
+      showToast('帮助中心建设中');
+    });
+  </script>
+</body>
+</html>

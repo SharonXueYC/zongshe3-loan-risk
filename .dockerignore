@@ -1,0 +1,11 @@
+# Docker 构建忽略
+**/node_modules
+**/.git
+**/.idea
+**/.vscode
+**/target
+**/*.log
+**/.env
+deploy/.env
+frontend/node_modules
+apps/uni-client/node_modules
