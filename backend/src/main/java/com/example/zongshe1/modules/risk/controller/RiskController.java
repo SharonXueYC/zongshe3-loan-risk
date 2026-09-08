@@ -1,6 +1,10 @@
 package com.example.zongshe1.modules.risk.controller;
 
+import com.example.zongshe1.common.dto.FeatureSnapshotDTO;
 import com.example.zongshe1.entity.RiskReport;
+import com.example.zongshe1.common.dto.RiskAssessmentRequest;
+import com.example.zongshe1.common.enums.RiskReasonCode;
+import com.example.zongshe1.common.dto.RiskReportDTO;
 import com.example.zongshe1.service.RiskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +28,62 @@ import java.util.Map;
 public class RiskController {
 
     private final RiskService riskService;
+
+    @PostMapping("/assess")
+    @Operation(summary = "风险评估（第1周契约版）", description = "返回固定 Mock 结果，字段名按终稿约定，便于前端和信贷服务对接")
+    public ResponseEntity<RiskReportDTO> assess(@RequestBody RiskAssessmentRequest request) {
+        log.info("接收风险评估请求：applicationId={}, userId={}, amount={}",
+                request.getApplicationId(), request.getUserId(), request.getLoanAmount());
+
+        RiskReportDTO report = new RiskReportDTO();
+        report.setReportId(1001L);
+        report.setApplicationId(request.getApplicationId());
+        report.setUserId(request.getUserId());
+        report.setCardVersion("card-v1");
+        report.setAssessedAt(LocalDateTime.now());
+        report.setStale(false);
+
+        //  Mock组装特征快照，第一周契约模拟数据
+        FeatureSnapshotDTO snapshot = new FeatureSnapshotDTO();
+        snapshot.setUserId(request.getUserId());
+        snapshot.setAge(22);
+        snapshot.setCreditScore(720);
+        report.setFeatureSnapshot(snapshot);
+
+        BigDecimal amount = request.getLoanAmount() == null ? BigDecimal.ZERO : request.getLoanAmount();
+        List<RiskReasonCode> reasonCodes = new ArrayList<>();
+        String reasonSummary;
+        String decision;
+
+        if (amount.compareTo(new BigDecimal("200000")) > 0) {
+            reasonCodes.add(RiskReasonCode.CREDIT_LOW);
+            decision = "REJECTED";
+            reasonSummary = "申请金额较大，且信用风险高";
+        } else {
+            decision = "APPROVED";
+            reasonSummary = "基础资料稳定，风险处于可接受范围";
+        }
+
+        if (request.getUserId() != null && request.getUserId() % 2 == 0L) {
+            reasonCodes.add(RiskReasonCode.DISHONEST_PUBLIC);
+            decision = "REJECTED";
+            reasonSummary = "命中失信公示名单，建议拒绝";
+        }
+
+        report.setDecision(decision);
+        report.setTotalScore(decision.equals("APPROVED") ? 68 : 87);
+        report.setMaxScore(100);
+        report.setReasonCodes(reasonCodes.isEmpty() ? List.of(RiskReasonCode.LPR_OK) : reasonCodes);
+        report.setReasonSummary(reasonSummary);
+        report.setBreakdown(Map.of(
+                "scorecard", 68,
+                "rules", 12,
+                "external", 7,
+                "behavior", 0
+        ));
+        return ResponseEntity.ok(report);
+    }
+
 
     @GetMapping("/applications/{applicationId}/assessment")
     @Operation(summary = "获取风控评估详情", description = "查询贷款申请的风控评估结果，无报告时自动执行评估")
