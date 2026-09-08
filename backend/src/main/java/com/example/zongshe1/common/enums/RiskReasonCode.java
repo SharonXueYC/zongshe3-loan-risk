@@ -16,4 +16,5 @@ public enum RiskReasonCode {
 
     private final String code;
     private final String description;
+
 }

@@ -43,7 +43,7 @@ public class RiskController {
         report.setAssessedAt(LocalDateTime.now());
         report.setStale(false);
 
-        // Mock组装特征快照，第一周契约模拟数据
+        //  Mock组装特征快照，第一周契约模拟数据
         FeatureSnapshotDTO snapshot = new FeatureSnapshotDTO();
         snapshot.setUserId(request.getUserId());
         snapshot.setAge(22);

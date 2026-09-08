@@ -25,4 +25,5 @@ public class RiskReportDTO {
     private FeatureSnapshotDTO featureSnapshot;
     private Boolean stale;
     private LocalDateTime assessedAt;
+
 }

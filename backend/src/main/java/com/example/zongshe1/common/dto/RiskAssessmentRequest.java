@@ -19,4 +19,5 @@ public class RiskAssessmentRequest {
     private String usage;
     private String channelId;
     private String description;
+
 }

@@ -25,4 +25,5 @@ public class FeatureSnapshotDTO {
     private LocalDateTime lprPublishDate;
     private Boolean stale;
     private Map<String, Object> extra;
+
 }
