@@ -16,6 +16,8 @@ public class UserDTO {
     private String userName;
     private String phoneNumber; // 需要在前端脱敏
     private String idCardNumber; // 需要在前端脱敏
+    /** 渠道标识 ID（可空） */
+    private String channelId;
     private Integer creditScore;
     private Integer userStatus;
     private LocalDateTime createTime;
@@ -59,5 +61,13 @@ public class UserDTO {
             return idCardNumber;
         }
         return idCardNumber.substring(0, 6) + "********" + idCardNumber.substring(14);
+    }
+    
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 }

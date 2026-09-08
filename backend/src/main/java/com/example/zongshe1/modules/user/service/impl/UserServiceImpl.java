@@ -105,6 +105,9 @@ public class UserServiceImpl implements UserService {
             user.setUserStatus(1);
             user.setCreditDocuments(null);
             
+            // 新增这一行：将前端传过来的渠道 ID 存入用户实体
+            user.setChannelId(request.getChannelId());
+
             // 4. 使用信誉分计算策略计算初始信誉分（预留扩展点）
             CreditScoreCalculator calculator = getCreditScoreCalculator();
             Integer initialCreditScore = calculator.calculateInitialCreditScore(user);

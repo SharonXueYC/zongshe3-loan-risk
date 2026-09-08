@@ -25,4 +25,7 @@ public class RegisterRequest {
     @NotBlank(message = "密码不能为空")
     @Size(min = 8, max = 64, message = "密码长度必须在8-64个字符之间")
     private String password;
+
+    /** 渠道标识 ID（可空） */
+    private String channelId;
 }
