@@ -1,6 +1,7 @@
 # 依赖与编译
 **/node_modules/
 backend/target/
+gateway/target/
 **/.mvn/wrapper/maven-wrapper.jar
 
 # 密钥与本地配置

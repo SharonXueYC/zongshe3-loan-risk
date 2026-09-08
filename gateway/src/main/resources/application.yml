@@ -1,0 +1,48 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      # 前端在另一端口（如 Vite 5173）访问网关时，浏览器会发 OPTIONS 预检。
+      # 跨域放在大门上处理，不必改信贷/风控代码。
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # 用户注册 / 登录 / 验证码 等，II 路径是 /api/users/**
+        # 不配置 StripPrefix：后端 Controller 仍然是 @RequestMapping("/api/users")
+        - id: credit-users
+          uri: http://127.0.0.1:8080
+          predicates:
+            - Path=/api/users/**
+
+        # 管理员登录 /api/admin/login 等
+        - id: credit-admin
+          uri: http://127.0.0.1:8080
+          predicates:
+            - Path=/api/admin/**
+
+        # 熊梓伊若把认证收到 /api/auth/**，下周不用改前端也能过网关
+        - id: credit-auth
+          uri: http://127.0.0.1:8080
+          predicates:
+            - Path=/api/auth/**
+
+# 启动后看控制台是否出现转发，排查 404 时打开
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: INFO
