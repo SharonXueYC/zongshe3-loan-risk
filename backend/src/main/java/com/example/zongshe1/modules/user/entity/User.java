@@ -34,6 +34,9 @@ public class User {
     @Column(name = "credit_documents", length = 512)
     private String creditDocuments;
 
+    @Column(name = "channel_id", length = 64)
+    private String channelId;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LoanApplication> loanApplications = new ArrayList<>();
 
@@ -107,5 +110,12 @@ public class User {
 
     public void setLoanApplications(List<LoanApplication> loanApplications) {
         this.loanApplications = loanApplications;
+    }
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 }
