@@ -1,81 +1,103 @@
-/**
- * 统一 API 请求（Android / H5 共用）
- * 部署时可在登录页设置服务器地址；默认同主机或开发机 8080
- */
-const API_BASE_KEY = 'apiBase'
+const BASE_URL = 'http://localhost:8088'
 
-function getDefaultBase() {
-  // #ifdef H5
-  if (typeof window !== 'undefined' && window.location && /^https?:$/i.test(window.location.protocol)) {
-    return window.location.origin
+function getToken() {
+  let token =
+    uni.getStorageSync('token') ||
+    uni.getStorageSync('accessToken') ||
+    ''
+
+  if (token.startsWith('Bearer ')) {
+    token = token.substring(7)
   }
-  // #endif
-  return 'http://10.0.2.2:8080' // Android 模拟器访问宿主机
+
+  return token
 }
 
-export function getApiBase() {
-  const saved = uni.getStorageSync(API_BASE_KEY)
-  return (saved && String(saved).trim()) || getDefaultBase()
+export function setToken(token) {
+  if (!token) return
+
+  const value = token.startsWith('Bearer ')
+    ? token.substring(7)
+    : token
+
+  uni.setStorageSync('token', value)
 }
 
-export function setApiBase(url) {
-  uni.setStorageSync(API_BASE_KEY, String(url).replace(/\/$/, ''))
-}
-
-export function getToken() {
-  return uni.getStorageSync('token') || ''
-}
-
-export function getUserId() {
-  return uni.getStorageSync('userId') || ''
-}
-
-export function saveSession(token, userId) {
-  uni.setStorageSync('token', token)
-  uni.setStorageSync('userId', userId)
-}
-
-export function clearSession() {
+export function clearToken() {
   uni.removeStorageSync('token')
-  uni.removeStorageSync('userId')
+  uni.removeStorageSync('accessToken')
+  uni.removeStorageSync('userInfo')
 }
 
-export function request(path, options = {}) {
+export default function request(options = {}) {
+  const {
+    url,
+    method = 'GET',
+    data,
+    header = {},
+    auth = true
+  } = options
+
   const token = getToken()
-  const header = Object.assign({ 'Content-Type': 'application/json' }, options.header || {})
-  if (token) header.Authorization = `Bearer ${token}`
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...header
+  }
+
+  if (auth && token) {
+    headers.Authorization = `Bearer ${token}`
+  }
 
   return new Promise((resolve, reject) => {
     uni.request({
-      url: `${getApiBase()}${path}`,
-      method: options.method || 'GET',
-      data: options.data,
-      header,
+      url: BASE_URL + url,
+      method,
+      data,
+      header: headers,
+      timeout: 15000,
+
       success(res) {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data)
-        } else {
-          const msg = (res.data && res.data.message) || `请求失败(${res.statusCode})`
-          reject(new Error(msg))
+        const { statusCode, data } = res
+
+        if (statusCode === 401) {
+          clearToken()
+          reject(new Error('登录状态已失效，请重新登录'))
+          return
         }
+
+        if (statusCode < 200 || statusCode >= 300) {
+          reject(
+            new Error(
+              data?.message ||
+              data?.msg ||
+              `请求失败(${statusCode})`
+            )
+          )
+          return
+        }
+
+        if (data?.success === false) {
+          reject(
+            new Error(
+              data.message || '请求失败'
+            )
+          )
+          return
+        }
+
+        resolve(data)
       },
+
       fail(err) {
-        reject(new Error(err.errMsg || '网络请求失败'))
-      },
+        console.error('请求失败：', err)
+
+        reject(
+          new Error(
+            '无法连接 Gateway：http://localhost:8088'
+          )
+        )
+      }
     })
   })
-}
-
-export const STATUS_MAP = {
-  pending: '审核中',
-  approved: '已通过',
-  rejected: '已拒绝',
-  disbursed: '已放款',
-  paid: '已还清',
-  settled: '已还清',
-}
-
-export function statusText(status) {
-  if (!status) return '未知'
-  return STATUS_MAP[String(status).toLowerCase()] || status
 }
