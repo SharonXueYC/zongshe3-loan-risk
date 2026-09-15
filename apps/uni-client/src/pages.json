@@ -2,23 +2,40 @@
   "pages": [
     {
       "path": "pages/login/login",
-      "style": { "navigationBarTitleText": "登录", "navigationStyle": "custom" }
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/register/register",
+      "style": {
+        "navigationBarTitleText": "注册"
+      }
     },
     {
       "path": "pages/home/home",
-      "style": { "navigationBarTitleText": "闪借" }
+      "style": {
+        "navigationBarTitleText": "闪借"
+      }
     },
     {
       "path": "pages/loan/apply",
-      "style": { "navigationBarTitleText": "申请贷款" }
+      "style": {
+        "navigationBarTitleText": "申请贷款"
+      }
     },
     {
       "path": "pages/loan/progress",
-      "style": { "navigationBarTitleText": "审核进度" }
+      "style": {
+        "navigationBarTitleText": "审核进度"
+      }
     },
     {
       "path": "pages/repay/repay",
-      "style": { "navigationBarTitleText": "还款" }
+      "style": {
+        "navigationBarTitleText": "还款"
+      }
     }
   ],
   "globalStyle": {
