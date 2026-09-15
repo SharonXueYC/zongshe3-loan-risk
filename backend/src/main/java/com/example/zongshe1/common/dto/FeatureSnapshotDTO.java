@@ -16,6 +16,8 @@ public class FeatureSnapshotDTO {
     private BigDecimal monthlyIncome;
     private BigDecimal loanAmount;
     private Integer loanTerm;
+
+    // 第1周已有字段
     private Boolean dishonestHit;
     private String dishonestName;
     private String courtName;
@@ -24,6 +26,10 @@ public class FeatureSnapshotDTO {
     private BigDecimal lpr5y;
     private LocalDateTime lprPublishDate;
     private Boolean stale;
+
+    // 第2周补充字段：用于真实抓取结果回填，保持兼容
+    private String caseNumber;
+    private String sourceUrl;
     private Map<String, Object> extra;
 
 }

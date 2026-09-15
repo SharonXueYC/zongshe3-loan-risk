@@ -5,7 +5,8 @@ import com.example.zongshe1.entity.RiskReport;
 import com.example.zongshe1.common.dto.RiskAssessmentRequest;
 import com.example.zongshe1.common.enums.RiskReasonCode;
 import com.example.zongshe1.common.dto.RiskReportDTO;
-import com.example.zongshe1.service.RiskService;
+import com.example.zongshe1.modules.risk.service.RiskService;
+import com.example.zongshe1.modules.risk.service.RiskFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.util.Map;
 public class RiskController {
 
     private final RiskService riskService;
+    private final RiskFeatureService riskFeatureService;
 
     @PostMapping("/assess")
     @Operation(summary = "风险评估（第1周契约版）", description = "返回固定 Mock 结果，字段名按终稿约定，便于前端和信贷服务对接")
@@ -165,6 +167,16 @@ public class RiskController {
         }
         Map<String, Object> result = riskService.batchRiskAssessment(applicationIds);
         result.put("success", true);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/features/{userId}")
+    @Operation(summary = "查询外部公开数据特征快照", description = "通过公开爬虫数据组装 FeatureSnapshotDTO，供第二周联调使用")
+    public ResponseEntity<Map<String, Object>> getFeatures(@PathVariable Long userId) {
+        FeatureSnapshotDTO snapshot = riskFeatureService.fetchPublicFeatureSnapshot(userId);
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("data", snapshot);
         return ResponseEntity.ok(result);
     }
 }

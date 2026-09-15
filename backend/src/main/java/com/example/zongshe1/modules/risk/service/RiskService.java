@@ -1,6 +1,5 @@
-package com.example.zongshe1.service;
+package com.example.zongshe1.modules.risk.service;
 
-import com.example.zongshe1.entity.LoanApplication;
 import com.example.zongshe1.entity.RiskReport;
 
 import java.util.List;
@@ -56,7 +55,7 @@ public interface RiskService {
      * 
      * @return 评估器列表
      */
-    List<RiskRuleEvaluator> getEnabledEvaluators();
+    List<com.example.zongshe1.service.RiskRuleEvaluator> getEnabledEvaluators();
 
     /**
      * 手动触发风险评估（用于定时任务或手动审核）
