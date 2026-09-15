@@ -1,4 +1,4 @@
-import request, { setToken } from '@/utils/request.js'
+import request, { setToken } from '@/utils/api.js'
 
 function getData(res) {
   return res?.data || res
@@ -13,6 +13,7 @@ function getToken(res) {
     data?.access_token ||
     res?.token ||
     res?.accessToken ||
+    res?.access_token ||
     ''
   )
 }
@@ -21,10 +22,12 @@ export async function login(phoneNumber, password) {
   const res = await request({
     url: '/api/users/login',
     method: 'POST',
+
     data: {
       phoneNumber,
       password
     },
+
     auth: false
   })
 
@@ -43,12 +46,14 @@ export function register(data) {
   return request({
     url: '/api/users/register',
     method: 'POST',
-    auth: false,
+
     data: {
       phoneNumber: data.phoneNumber,
       password: data.password,
       userName: data.userName,
       channelId: data.channelId || null
-    }
+    },
+
+    auth: false
   })
 }
