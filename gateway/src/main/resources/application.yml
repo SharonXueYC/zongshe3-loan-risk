@@ -22,24 +22,62 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        # 用户注册 / 登录 / 验证码 等，II 路径是 /api/users/**
-        # 不配置 StripPrefix：后端 Controller 仍然是 @RequestMapping("/api/users")
+        # ----- 风控（业务服务 2）-----
+        # 过渡期默认仍转到主业务 8080（风控包尚未迁出）。
+        # 拆成独立 risk-service 后启动前设置：
+        #   $env:RISK_SERVICE_URI="http://127.0.0.1:8081"
+        # 须写在 /api/admin/** 之前，否则爬虫接口会被主业务抢走。
+        - id: risk-api
+          uri: ${RISK_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            # /** 匹配不到无后续路径的列表接口，须同时写精确路径
+            - Path=/api/risk,/api/risk/**,/api/credit,/api/credit/**,/api/admin/crawler,/api/admin/crawler/**
+
+        # ----- 主业务（信贷 + 平台，业务服务 1）-----
         - id: credit-users
-          uri: http://127.0.0.1:8080
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users,/api/users/**
 
-        # 管理员登录 /api/admin/login 等
         - id: credit-admin
-          uri: http://127.0.0.1:8080
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
           predicates:
-            - Path=/api/admin/**
+            - Path=/api/admin,/api/admin/**
 
-        # 熊梓伊若把认证收到 /api/auth/**，下周不用改前端也能过网关
         - id: credit-auth
-          uri: http://127.0.0.1:8080
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
           predicates:
-            - Path=/api/auth/**
+            - Path=/api/auth,/api/auth/**
+
+        - id: main-products
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/products,/api/products/**
+
+        - id: main-loan-applications
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/loan-applications,/api/loan-applications/**
+
+        - id: main-loans
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/loans,/api/loans/**
+
+        - id: main-contracts
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/contracts,/api/contracts/**
+
+        - id: main-repayment
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/repayment,/api/repayment/**
+
+        - id: main-ops
+          uri: ${MAIN_SERVICE_URI:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/ops,/api/ops/**,/api/audit,/api/audit/**,/api/statistics,/api/statistics/**,/api/settings,/api/settings/**
 
 # 启动后看控制台是否出现转发，排查 404 时打开
 logging:
