@@ -6,12 +6,20 @@ export function getToken() {
 }
 
 export function setToken(token, remember = false) {
+  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem('isLoggedIn')
+  sessionStorage.removeItem(TOKEN_KEY)
+  sessionStorage.removeItem('isLoggedIn')
+
   const storage = remember ? localStorage : sessionStorage
   storage.setItem(TOKEN_KEY, token)
   storage.setItem('isLoggedIn', 'true')
 }
 
 export function setAdminUser(user, remember = false) {
+  localStorage.removeItem(USER_KEY)
+  sessionStorage.removeItem(USER_KEY)
+
   const storage = remember ? localStorage : sessionStorage
   storage.setItem(USER_KEY, JSON.stringify(user))
 }

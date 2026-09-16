@@ -65,6 +65,7 @@ export default {
             setAdminUser(res.admin, this.loginForm.remember)
           }
           this.$emit('login-success')
+          this.$router.push({ name: 'admin' })
         } else {
           alert(res.message || '登录失败')
         }
