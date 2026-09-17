@@ -30,6 +30,12 @@
                 <span class="nav-text">贷款申请</span>
               </router-link>
             </li>
+            <li :class="{ active: ['admin-loan-applications', 'admin-loan-detail'].includes($route.name) }">
+              <router-link :to="{ name: 'admin-loan-applications' }" aria-label="贷款申请管理">
+                <span class="nav-icon">▤</span>
+                <span class="nav-text">贷款申请管理</span>
+              </router-link>
+            </li>
             <li :class="{ active: isDashboardPage('statistics') }">
               <router-link :to="{ name: 'admin', query: { section: 'statistics' } }">
                 <span class="nav-icon">◇</span>

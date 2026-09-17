@@ -3,6 +3,8 @@ import Login from '../components/Login.vue'
 import Dashboard from '../components/Dashboard.vue'
 import AdminLayout from '../layout/AdminLayout.vue'
 import Product from '../views/admin/Product.vue'
+import LoanApplication from '../views/admin/loan/LoanApplication.vue'
+import LoanDetail from '../views/admin/loan/LoanDetail.vue'
 import { checkAuth } from '../api/admin'
 import { clearAuth, getToken } from '../api/client'
 
@@ -28,6 +30,16 @@ const router = createRouter({
           path: 'products',
           name: 'admin-products',
           component: Product
+        },
+        {
+          path: 'loan-applications',
+          name: 'admin-loan-applications',
+          component: LoanApplication
+        },
+        {
+          path: 'loan-applications/:id',
+          name: 'admin-loan-detail',
+          component: LoanDetail
         }
       ]
     },
