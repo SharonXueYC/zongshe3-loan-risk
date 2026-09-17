@@ -1,5 +1,6 @@
 <template>
-  <main class="content">
+  <Home v-if="currentPage === 'dashboard'" />
+  <main v-else class="content">
         <!-- 控制台页面 -->
         <div v-if="currentPage === 'dashboard'">
           <div class="content-header">
@@ -1075,12 +1076,15 @@ import {
   logout as apiLogout
 } from '../api/admin'
 import { clearAuth, getAdminUser } from '../api/client'
+import Home from '../views/admin/Home.vue'
 
 export default {
   name: 'Dashboard',
+  components: { Home },
   data() {
     return {
       currentPage: 'dashboard',
+      legacyDataLoaded: false,
       adminName: '管理员',
       dashboardStats: {
         totalUsers: 0,
@@ -1498,12 +1502,12 @@ export default {
       }
     },
     async loadAllData() {
+      this.legacyDataLoaded = true
       const admin = getAdminUser()
       if (admin && admin.name) {
         this.adminName = admin.name
       }
       await Promise.all([
-        this.loadDashboardData(),
         this.loadUsers(),
         this.loadLoans(),
         this.loadContracts(),
@@ -2044,12 +2048,9 @@ export default {
   // 生命周期钩子
   mounted() {
     this.syncPageFromRoute()
-    this.loadAllData()
+    if (this.currentPage !== 'dashboard') this.loadAllData()
     if (this.currentPage === 'statistics') {
       this.initCharts()
-    }
-    if (this.currentPage === 'dashboard') {
-      this.$nextTick(() => this.initDashboardCharts())
     }
     window.addEventListener('resize', this.handleResize)
   },
@@ -2073,14 +2074,16 @@ export default {
       if (oldPage === 'statistics') {
         this.disposeStatisticsCharts()
       }
+      // 默认首页只展示 Mock；首次进入旧业务区时再沿用原有数据加载。
+      if (newPage !== 'dashboard' && !this.legacyDataLoaded) {
+        this.loadAllData().then(() => {
+          if (this.currentPage === 'statistics') this.$nextTick(() => this.initCharts())
+        })
+        return
+      }
       if (newPage === 'statistics') {
         this.loadChartData().then(() => {
           setTimeout(() => this.initCharts(), 80)
-        })
-      }
-      if (newPage === 'dashboard') {
-        this.loadDashboardData().then(() => {
-          setTimeout(() => this.initDashboardCharts(), 80)
         })
       }
       if (newPage === 'users') this.loadUsers()
