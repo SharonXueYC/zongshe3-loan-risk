@@ -168,11 +168,12 @@
 
 <script>
 import {
-  fetchProducts,
+  getProducts,
   createProduct,
   updateProduct,
-  deleteProduct
-} from '../../api/admin'
+  deleteProduct,
+  normalizeProductStatus
+} from '../../api/product'
 
 function createEmptyForm() {
   return {
@@ -248,7 +249,7 @@ export default {
       this.loading = true
       this.loadError = ''
       try {
-        const products = await fetchProducts()
+        const products = await getProducts()
         if (!Array.isArray(products)) throw new Error('产品列表返回格式异常')
         this.products = products
         return true
@@ -382,9 +383,7 @@ export default {
       }
     },
     normalizeStatus(status) {
-      if (status === 1 || status === '1' || status === 'active') return 'active'
-      if (status === 0 || status === '0' || status === 'inactive') return 'inactive'
-      return ''
+      return normalizeProductStatus(status)
     },
     statusText(status) {
       const normalized = this.normalizeStatus(status)

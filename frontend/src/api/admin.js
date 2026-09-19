@@ -164,33 +164,13 @@ export async function resetPortalSettings() {
   return res.data
 }
 
-export async function fetchProducts(search = '') {
-  const params = new URLSearchParams()
-  if (search) params.set('search', search)
-  const query = params.toString() ? `?${params.toString()}` : ''
-  const res = await request(`/api/products${query}`)
-  return res.data || []
-}
-
-export async function createProduct(payload) {
-  const res = await request('/api/products', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  })
-  return res.data
-}
-
-export async function updateProduct(id, payload) {
-  const res = await request(`/api/products/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(payload)
-  })
-  return res.data
-}
-
-export async function deleteProduct(id) {
-  await request(`/api/products/${id}`, { method: 'DELETE' })
-}
+// 兼容旧版 Dashboard；产品接口的真实实现统一维护在 product.js。
+export {
+  getProducts as fetchProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct
+} from './product'
 
 export async function generateContract(applicationId) {
   const res = await request(`/api/admin/contracts/from-application/${applicationId}`, {
