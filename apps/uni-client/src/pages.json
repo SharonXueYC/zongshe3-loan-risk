@@ -36,6 +36,18 @@
       "style": {
         "navigationBarTitleText": "还款"
       }
+    },
+    {
+      "path": "pages/product/list",
+      "style": {
+        "navigationBarTitleText": "贷款产品"
+      }
+    },
+    {
+      "path": "pages/product/detail",
+      "style": {
+        "navigationBarTitleText": "产品详情"
+      }
     }
   ],
   "globalStyle": {
