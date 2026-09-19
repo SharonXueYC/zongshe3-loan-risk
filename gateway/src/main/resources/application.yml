@@ -40,7 +40,13 @@ spring:
           uri: http://127.0.0.1:8080
           predicates:
             - Path=/api/auth/**
-
+            
+        # 贷款产品列表和详情
+        - id: credit-products
+          uri: http://127.0.0.1:8080
+          predicates:
+            - Path=/api/products/**
+            
 # 启动后看控制台是否出现转发，排查 404 时打开
 logging:
   level:
